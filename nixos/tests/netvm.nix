@@ -5,13 +5,13 @@
   ...
 }:
 let
-  tls = false;
+  tls = true;
   snakeoil = ./snakeoil;
   addrs = {
     netvm = "192.168.101.1";
     adminvm = "192.168.101.2";
   };
-  adminSettings = {
+  admin = {
     name = "admin-vm";
     addr = addrs.adminvm;
     port = "9001";
@@ -43,9 +43,10 @@ in
               environment.systemPackages = [ pkgs.grpcurl ];
               givc.admin = {
                 enable = true;
-                name = "admin-vm";
-                addr = addrs.adminvm;
-                port = "9001";
+                inherit (admin) name;
+                inherit (admin) addr;
+                inherit (admin) port;
+                inherit (admin) protocol;
                 tls = mkTls "admin-vm";
               };
             };
@@ -80,6 +81,7 @@ in
               services.hostapd = {
                 enable = true;
                 radios.wlan0 = {
+                  wifi4.enable = false;
                   wifi6.enable = true;
                   networks = {
                     wlan0 = {
@@ -167,9 +169,11 @@ in
 
               givc.sysvm = {
                 enable = true;
-                admin = adminSettings;
-                addr = addrs.netvm;
-                name = "net-vm";
+                inherit admin;
+                agent = {
+                  addr = addrs.netvm;
+                  name = "net-vm";
+                };
                 tls = mkTls "net-vm";
                 wifiManager = true;
                 hwidService = true;
@@ -187,7 +191,7 @@ in
                 "-cacert ${nodes.netvm.givc.sysvm.tls.caCertPath} -cert ${nodes.netvm.givc.sysvm.tls.certPath} -key ${nodes.netvm.givc.sysvm.tls.keyPath}"
               else
                 "-plaintext";
-            grpcurl_addr = "${nodes.netvm.givc.sysvm.addr}:${nodes.netvm.givc.sysvm.port} ";
+            grpcurl_addr = "${nodes.netvm.givc.sysvm.agent.addr}:${nodes.netvm.givc.sysvm.agent.port} ";
           in
           ''
             import time
