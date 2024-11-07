@@ -134,12 +134,20 @@ in
       }
     ];
 
+    systemd.targets.givc-setup = {
+      enable = true;
+      description = "Ghaf givc target";
+      bindsTo = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+      wantedBy = [ "network-online.target" ];
+    };
+
     systemd.services."givc-${cfg.agent.name}" = {
       description = "GIVC remote service manager for system VMs";
       enable = true;
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      after = [ "givc-setup.target" ];
+      partOf = [ "givc-setup.target" ];
+      wantedBy = [ "givc-setup.target" ];
       serviceConfig = {
         Type = "exec";
         ExecStart = "${givc-agent}/bin/givc-agent";

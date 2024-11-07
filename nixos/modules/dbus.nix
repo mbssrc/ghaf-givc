@@ -199,12 +199,6 @@ in
           You need to specify a non-system user with UID set to run the session bus proxy.
         '';
       }
-      {
-        assertion = cfg.session.enable -> !cfg.system.enable;
-        message = ''
-          You can only enable either system or session bus proxy at once.
-        '';
-      }
     ];
 
     environment.systemPackages = [
@@ -237,8 +231,8 @@ in
           {
             description = "GIVC local xdg-dbus-proxy system service";
             enable = true;
-            before = [ "network-online.target" ];
-            wantedBy = [ "network-online.target" ];
+            before = [ "givc-setup.target" ];
+            wantedBy = [ "givc-setup.target" ];
             serviceConfig = {
               Type = "exec";
               ExecStart = "${pkgs.xdg-dbus-proxy}/bin/xdg-dbus-proxy unix:path=/run/dbus/system_bus_socket ${cfg.system.socket} --filter ${args}";

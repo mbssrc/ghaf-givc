@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	givc_admin "givc/api/admin"
 	givc_app "givc/internal/pkgs/applications"
@@ -179,8 +180,10 @@ func main() {
 
 		// Register agent with admin server
 		_, err := givc_serviceclient.RegisterRemoteService(cfgAdminServer, agentEntryRequest)
-		if err != nil {
-			log.Fatalf("Error register agent: %s", err)
+		for err != nil {
+			log.Warnf("Error register agent: %s", err)
+			time.Sleep(1 * time.Second)
+			_, err = givc_serviceclient.RegisterRemoteService(cfgAdminServer, agentEntryRequest)
 		}
 
 		// Register services with admin server
@@ -250,27 +253,17 @@ func main() {
 	// Create socket proxy server (optional)
 	for _, proxyConfig := range proxyConfigs {
 
-		log.Infof("Configuring socket proxy server: %v", proxyConfig)
+		// Create socket proxy server for dbus
+		socketProxyServer, err := givc_socketproxy.NewSocketProxyServer(proxyConfig.Socket, proxyConfig.Server)
+		if err != nil {
+			log.Errorf("Cannot create socket proxy server: %v", err)
+		}
 
-		ctx, ctxCancel := context.WithCancel(context.Background())
-		proxyServerStarted := make(chan struct{})
+		// Run proxy client
+		if !proxyConfig.Server {
+			log.Infof("Configuring socket proxy client: %v", proxyConfig)
 
-		// Start proxy server
-		go func(proxyConfig givc_types.ProxyConfig) {
-			defer ctxCancel()
-
-			// Create socket proxy server for dbus
-			var grpcProxyService []givc_types.GrpcServiceRegistration
-			socketProxyServer, err := givc_socketproxy.NewSocketProxyServer(proxyConfig.Socket, proxyConfig.Server)
-			if err != nil {
-				log.Errorf("Cannot create socket proxy server: %v", err)
-			}
-			grpcProxyService = append(grpcProxyService, socketProxyServer)
-
-			// Start socket stream when server ready
 			go func(proxyConfig givc_types.ProxyConfig) {
-				defer ctxCancel()
-				<-proxyServerStarted
 
 				// Configure client endpoint
 				socketClient := &givc_types.EndpointConfig{
@@ -278,34 +271,44 @@ func main() {
 					TlsConfig: tlsConfig,
 				}
 
-				err = socketProxyServer.StreamToRemote(ctx, socketClient)
+				err = socketProxyServer.StreamToRemote(context.Background(), socketClient)
 				if err != nil {
-					log.Errorf("Socket stream exited: %v", err)
+					log.Errorf("Socket client stream exited: %v", err)
 				}
 
 			}(proxyConfig)
+		}
 
-			// Socket proxy server config
-			cfgProxyServer := &givc_types.EndpointConfig{
-				Transport: givc_types.TransportConfig{
-					Name:     cfgAgent.Transport.Name,
-					Address:  cfgAgent.Transport.Address,
-					Port:     proxyConfig.Transport.Port,
-					Protocol: proxyConfig.Transport.Protocol,
-				},
-				TlsConfig: tlsConfig,
-			}
+		// Run proxy server
+		if proxyConfig.Server {
+			log.Infof("Configuring socket proxy server: %v", proxyConfig)
 
-			grpcServer, err := givc_grpc.NewServer(cfgProxyServer, grpcProxyService)
-			if err != nil {
-				log.Errorf("Cannot create grpc proxy server config: %v", err)
-			}
-			err = grpcServer.ListenAndServe(ctx, proxyServerStarted)
-			if err != nil {
-				log.Errorf("Grpc proxy server failed: %v", err)
-			}
+			go func(proxyConfig givc_types.ProxyConfig) {
 
-		}(proxyConfig)
+				// Socket proxy server config
+				cfgProxyServer := &givc_types.EndpointConfig{
+					Transport: givc_types.TransportConfig{
+						Name:     cfgAgent.Transport.Name,
+						Address:  cfgAgent.Transport.Address,
+						Port:     proxyConfig.Transport.Port,
+						Protocol: proxyConfig.Transport.Protocol,
+					},
+					TlsConfig: tlsConfig,
+				}
+
+				var grpcProxyService []givc_types.GrpcServiceRegistration
+				grpcProxyService = append(grpcProxyService, socketProxyServer)
+				grpcServer, err := givc_grpc.NewServer(cfgProxyServer, grpcProxyService)
+				if err != nil {
+					log.Errorf("Cannot create grpc proxy server config: %v", err)
+				}
+				err = grpcServer.ListenAndServe(context.Background(), make(chan struct{}))
+				if err != nil {
+					log.Errorf("Grpc socket proxy server failed: %v", err)
+				}
+
+			}(proxyConfig)
+		}
 	}
 
 	// Create and start main grpc server

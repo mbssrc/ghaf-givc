@@ -1,9 +1,12 @@
+// Copyright 2024 TII (SSRC) and the Ghaf contributors
+// SPDX-License-Identifier: Apache-2.0
 package socketproxy
 
 import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -17,12 +20,10 @@ type SocketProxyController struct {
 func NewSocketProxyController(socket string, runAsServer bool) (*SocketProxyController, error) {
 
 	var listener net.Listener
+	var err error
 	if !runAsServer {
 		// Remove socket file if it exists
-		_, err := os.Stat(socket)
-		if err == nil {
-			os.Remove(socket)
-		}
+		os.Remove(socket)
 
 		// Listen on unix socket
 		listener, err = net.Listen("unix", socket)
@@ -32,8 +33,15 @@ func NewSocketProxyController(socket string, runAsServer bool) (*SocketProxyCont
 		}
 	}
 
+	// Block until the socket is created
+	_, err = os.Stat(socket)
+	for err != nil {
+		time.Sleep(500 * time.Millisecond)
+		_, err = os.Stat(socket)
+	}
+
 	// Change socket owner and permissions to allow any users in group 'users' (gid: 100)
-	err := os.Chown(socket, os.Getuid(), 100)
+	err = os.Chown(socket, -1, 100)
 	if err != nil {
 		log.Errorf("Unable to change socket file ownership: %v", err)
 	}
@@ -47,10 +55,6 @@ func NewSocketProxyController(socket string, runAsServer bool) (*SocketProxyCont
 
 func (s *SocketProxyController) Dial() (net.Conn, error) {
 
-	if !s.runAsServer {
-		return nil, fmt.Errorf("socket proxy runs as client")
-	}
-
 	// Dial to the unix socket
 	conn, err := net.Dial("unix", s.socket)
 	if err != nil {
@@ -62,9 +66,6 @@ func (s *SocketProxyController) Dial() (net.Conn, error) {
 
 func (s *SocketProxyController) Accept() (net.Conn, error) {
 
-	if s.runAsServer {
-		return nil, fmt.Errorf("socket proxy runs as server")
-	}
 	// Accept new connection
 	conn, err := s.listener.Accept()
 	if err != nil {
@@ -85,23 +86,21 @@ func (s *SocketProxyController) Close() error {
 }
 
 func (s *SocketProxyController) Write(conn net.Conn, data []byte) error {
-	_, err := conn.Write(data)
+	n, err := conn.Write(data)
 	if err != nil {
 		return err
+	}
+	if n != len(data) {
+		return fmt.Errorf("unable to write all data to socket")
 	}
 	return nil
 }
 
 func (s *SocketProxyController) Read(conn net.Conn) ([]byte, error) {
-
-	var data []byte
 	buf := make([]byte, 1024)
-
 	n, err := conn.Read(buf)
 	if err != nil {
 		return nil, err
 	}
-	data = append(data, buf[:n]...)
-
-	return data, nil
+	return buf[:n], nil
 }

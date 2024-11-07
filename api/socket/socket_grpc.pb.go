@@ -22,16 +22,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	SocketStream_Sync_FullMethodName        = "/socketproxy.SocketStream/Sync"
-	SocketStream_ReceiveData_FullMethodName = "/socketproxy.SocketStream/ReceiveData"
+	SocketStream_TransferData_FullMethodName = "/socketproxy.SocketStream/TransferData"
 )
 
 // SocketStreamClient is the client API for SocketStream service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SocketStreamClient interface {
-	Sync(ctx context.Context, in *SyncData, opts ...grpc.CallOption) (*SyncData, error)
-	ReceiveData(ctx context.Context, opts ...grpc.CallOption) (SocketStream_ReceiveDataClient, error)
+	TransferData(ctx context.Context, opts ...grpc.CallOption) (SocketStream_TransferDataClient, error)
 }
 
 type socketStreamClient struct {
@@ -42,43 +40,31 @@ func NewSocketStreamClient(cc grpc.ClientConnInterface) SocketStreamClient {
 	return &socketStreamClient{cc}
 }
 
-func (c *socketStreamClient) Sync(ctx context.Context, in *SyncData, opts ...grpc.CallOption) (*SyncData, error) {
-	out := new(SyncData)
-	err := c.cc.Invoke(ctx, SocketStream_Sync_FullMethodName, in, out, opts...)
+func (c *socketStreamClient) TransferData(ctx context.Context, opts ...grpc.CallOption) (SocketStream_TransferDataClient, error) {
+	stream, err := c.cc.NewStream(ctx, &SocketStream_ServiceDesc.Streams[0], SocketStream_TransferData_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-func (c *socketStreamClient) ReceiveData(ctx context.Context, opts ...grpc.CallOption) (SocketStream_ReceiveDataClient, error) {
-	stream, err := c.cc.NewStream(ctx, &SocketStream_ServiceDesc.Streams[0], SocketStream_ReceiveData_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &socketStreamReceiveDataClient{stream}
+	x := &socketStreamTransferDataClient{stream}
 	return x, nil
 }
 
-type SocketStream_ReceiveDataClient interface {
-	Send(*SocketDataStream) error
-	CloseAndRecv() (*Empty, error)
+type SocketStream_TransferDataClient interface {
+	Send(*BytePacket) error
+	Recv() (*BytePacket, error)
 	grpc.ClientStream
 }
 
-type socketStreamReceiveDataClient struct {
+type socketStreamTransferDataClient struct {
 	grpc.ClientStream
 }
 
-func (x *socketStreamReceiveDataClient) Send(m *SocketDataStream) error {
+func (x *socketStreamTransferDataClient) Send(m *BytePacket) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *socketStreamReceiveDataClient) CloseAndRecv() (*Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(Empty)
+func (x *socketStreamTransferDataClient) Recv() (*BytePacket, error) {
+	m := new(BytePacket)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -89,8 +75,7 @@ func (x *socketStreamReceiveDataClient) CloseAndRecv() (*Empty, error) {
 // All implementations must embed UnimplementedSocketStreamServer
 // for forward compatibility
 type SocketStreamServer interface {
-	Sync(context.Context, *SyncData) (*SyncData, error)
-	ReceiveData(SocketStream_ReceiveDataServer) error
+	TransferData(SocketStream_TransferDataServer) error
 	mustEmbedUnimplementedSocketStreamServer()
 }
 
@@ -98,11 +83,8 @@ type SocketStreamServer interface {
 type UnimplementedSocketStreamServer struct {
 }
 
-func (UnimplementedSocketStreamServer) Sync(context.Context, *SyncData) (*SyncData, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
-}
-func (UnimplementedSocketStreamServer) ReceiveData(SocketStream_ReceiveDataServer) error {
-	return status.Errorf(codes.Unimplemented, "method ReceiveData not implemented")
+func (UnimplementedSocketStreamServer) TransferData(SocketStream_TransferDataServer) error {
+	return status.Errorf(codes.Unimplemented, "method TransferData not implemented")
 }
 func (UnimplementedSocketStreamServer) mustEmbedUnimplementedSocketStreamServer() {}
 
@@ -117,44 +99,26 @@ func RegisterSocketStreamServer(s grpc.ServiceRegistrar, srv SocketStreamServer)
 	s.RegisterService(&SocketStream_ServiceDesc, srv)
 }
 
-func _SocketStream_Sync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SyncData)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SocketStreamServer).Sync(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SocketStream_Sync_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketStreamServer).Sync(ctx, req.(*SyncData))
-	}
-	return interceptor(ctx, in, info, handler)
+func _SocketStream_TransferData_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(SocketStreamServer).TransferData(&socketStreamTransferDataServer{stream})
 }
 
-func _SocketStream_ReceiveData_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SocketStreamServer).ReceiveData(&socketStreamReceiveDataServer{stream})
-}
-
-type SocketStream_ReceiveDataServer interface {
-	SendAndClose(*Empty) error
-	Recv() (*SocketDataStream, error)
+type SocketStream_TransferDataServer interface {
+	Send(*BytePacket) error
+	Recv() (*BytePacket, error)
 	grpc.ServerStream
 }
 
-type socketStreamReceiveDataServer struct {
+type socketStreamTransferDataServer struct {
 	grpc.ServerStream
 }
 
-func (x *socketStreamReceiveDataServer) SendAndClose(m *Empty) error {
+func (x *socketStreamTransferDataServer) Send(m *BytePacket) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *socketStreamReceiveDataServer) Recv() (*SocketDataStream, error) {
-	m := new(SocketDataStream)
+func (x *socketStreamTransferDataServer) Recv() (*BytePacket, error) {
+	m := new(BytePacket)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -167,16 +131,12 @@ func (x *socketStreamReceiveDataServer) Recv() (*SocketDataStream, error) {
 var SocketStream_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "socketproxy.SocketStream",
 	HandlerType: (*SocketStreamServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Sync",
-			Handler:    _SocketStream_Sync_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "ReceiveData",
-			Handler:       _SocketStream_ReceiveData_Handler,
+			StreamName:    "TransferData",
+			Handler:       _SocketStream_TransferData_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},

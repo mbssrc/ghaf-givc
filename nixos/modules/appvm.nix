@@ -115,6 +115,7 @@ in
         });
       '';
     };
+
     systemd.user.services."givc-${cfg.agent.name}" = {
       description = "GIVC remote service manager for application VMs";
       enable = true;

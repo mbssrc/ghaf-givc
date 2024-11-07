@@ -4,18 +4,11 @@ syntax = "proto3";
 option go_package = "./socketproxy";
 package socketproxy;
 
-message Empty {}
-
-message SyncData {
-    uint32 Status = 1;
-}
-
-message SocketDataStream {
+message BytePacket {
     bytes Data = 1;
 }
 
 service SocketStream {
-    rpc Sync(SyncData) returns (SyncData) {}
-    rpc ReceiveData(stream SocketDataStream) returns (Empty) {}
+    rpc TransferData(stream BytePacket) returns (stream BytePacket) {}
 }
 

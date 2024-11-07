@@ -1,3 +1,5 @@
+# Copyright 2024 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
 {
   self,
   lib,
@@ -11,8 +13,8 @@ let
     netvm = "192.168.101.1";
     audiovm = "192.168.101.2";
     guivm = "192.168.101.3";
-    appvm = "192.168.101.100";
     adminvm = "192.168.101.10";
+    appvm = "192.168.101.100";
   };
   admin = {
     name = "admin-vm";
@@ -150,12 +152,21 @@ in
                   }
                   {
                     transport = {
-                      name = "chromium-vm";
-                      addr = addrs.appvm;
+                      name = "audio-vm";
+                      addr = addrs.audiovm;
                       port = "9012";
                       protocol = "tcp";
                     };
                     socket = "/tmp/.dbusproxy_app.sock";
+                  }
+                  {
+                    transport = {
+                      name = "chromium-vm";
+                      addr = addrs.appvm;
+                      port = "9013";
+                      protocol = "tcp";
+                    };
+                    socket = "/tmp/.dbusproxy_app2.sock";
                   }
                 ];
                 debug = true;
@@ -261,8 +272,10 @@ in
 
               # Service
               services.upower.enable = true;
+              services.playerctld.enable = true;
 
               # Setup users and keys
+              users.mutableUsers = false;
               users.groups.users = { };
               users.users = {
                 ghaf = {
@@ -270,6 +283,7 @@ in
                   group = "users";
                   uid = 1000;
                   openssh.authorizedKeys.keys = [ snakeOilPublicKey ];
+                  linger = true;
                 };
               };
 
@@ -291,6 +305,15 @@ in
                     };
                     socket = "/tmp/.dbusproxy_snd.sock";
                   }
+                  {
+                    transport = {
+                      name = "gui-vm";
+                      addr = addrs.guivm;
+                      port = "9012";
+                      protocol = "tcp";
+                    };
+                    socket = "/tmp/.dbusproxy_app.sock";
+                  }
                 ];
                 debug = true;
               };
@@ -303,6 +326,14 @@ in
                   socket = "/tmp/.dbusproxy_snd.sock";
                   policy.talk = [
                     "org.freedesktop.UPower.*"
+                  ];
+                };
+                session = {
+                  enable = true;
+                  user = "ghaf";
+                  socket = "/tmp/.dbusproxy_app.sock";
+                  policy.talk = [
+                    "org.mpris.MediaPlayer2.playerctld.*"
                   ];
                 };
               };
@@ -332,6 +363,7 @@ in
               services.playerctld.enable = true;
 
               # Setup users and keys
+              users.mutableUsers = false;
               users.groups.users = { };
               users.users = {
                 ghaf = {
@@ -342,7 +374,6 @@ in
                   linger = true;
                 };
               };
-              services.getty.autologinUser = "ghaf";
 
               givc.appvm = {
                 enable = true;
@@ -352,22 +383,22 @@ in
                   name = "chromium-vm";
                 };
                 tls = mkTls "chromium-vm";
-                applications = [
-                  {
-                    name = "test";
-                    command = "/bin/bash";
-                    args = [ ];
-                  }
-                ];
                 socketProxy = [
                   {
                     transport = {
                       name = "gui-vm";
                       addr = addrs.guivm;
-                      port = "9012";
+                      port = "9013";
                       protocol = "tcp";
                     };
-                    socket = "/tmp/.dbusproxy_app.sock";
+                    socket = "/tmp/.dbusproxy_app2.sock";
+                  }
+                ];
+                applications = [
+                  {
+                    name = "dummy";
+                    command = "/bin/bash";
+                    args = [ ];
                   }
                 ];
                 debug = true;
@@ -378,64 +409,71 @@ in
                 session = {
                   enable = true;
                   user = "ghaf";
-                  socket = "/tmp/.dbusproxy_app.sock";
+                  socket = "/tmp/.dbusproxy_app2.sock";
                   policy.talk = [
                     "org.mpris.MediaPlayer2.playerctld.*"
                   ];
                 };
               };
             };
-
         };
 
         testScript = _: ''
-          # import time
 
           with subtest("boot_completed"):
-              adminvm.wait_for_unit("multi-user.target")
-              audiovm.wait_for_unit("multi-user.target")
-              netvm.wait_for_unit("multi-user.target")
-              appvm.wait_for_unit("multi-user.target")
-              guivm.wait_for_unit("multi-user.target")
+            adminvm.wait_for_unit("multi-user.target")
+            audiovm.wait_for_unit("multi-user.target")
+            netvm.wait_for_unit("multi-user.target")
+            guivm.wait_for_unit("multi-user.target")
+            appvm.wait_for_unit("multi-user.target")
+
+          with subtest("asd"):
+            print(appvm.succeed("ls -ahl /tmp/.dbusproxy_app2.sock"))
+            print(audiovm.succeed("ls -ahl /tmp/.dbusproxy_app.sock"))
+            print(audiovm.succeed(""))
+
 
           with subtest("success_tests_systembus"):
 
-              # SUCCESS: remote access to netvms NetworkManager service; dbus-send
-              print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.DBus.Properties.Get string:'org.freedesktop.NetworkManager' string:'ActiveConnections'"))
+            # SUCCESS: remote access to netvms NetworkManager service; dbus-send
+            print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.DBus.Properties.Get string:'org.freedesktop.NetworkManager' string:'ActiveConnections'"))
 
-              # SUCCESS: remote access to netvms NetworkManager service; nmcli
-              print(guivm.succeed("sudo -u ghaf -- bash -c 'export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/tmp/.dbusproxy_net.sock; nmcli d'"))
+            # SUCCESS: remote access to netvms NetworkManager service; nmcli
+            print(guivm.succeed("sudo -u ghaf -- bash -c 'export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/tmp/.dbusproxy_net.sock; nmcli d'"))
 
-              # SUCCESS: access to additional specified netvm service
-              print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.Avahi /org/freedesktop/Avahi org.freedesktop.DBus.Introspectable.Introspect"))
+            # SUCCESS: access to additional specified netvm service
+            print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.Avahi /org/freedesktop/Avahi org.freedesktop.DBus.Introspectable.Introspect"))
 
-              # SUCCESS: 'call' method access to specified netvm service
-              print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.EnumerateDevices"))
+            # SUCCESS: 'call' method access to specified netvm service
+            print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.EnumerateDevices"))
 
-              # SUCCESS: connection to secondary system vm (audio)
-              print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_snd.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.DBus.Introspectable.Introspect"))
+            # SUCCESS: connection to secondary system vm (audio)
+            print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_snd.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.DBus.Introspectable.Introspect"))
 
           with subtest("failure_tests_systembus"):
 
-              # FAIL: 'call' access to non-specified netvm service
-              print(guivm.fail("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.GetCriticalAction"))
+            # FAIL: 'call' access to non-specified netvm service
+            print(guivm.fail("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.GetCriticalAction"))
 
-              # FAIL: root user access to netvm service
-              print(guivm.fail("dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.DBus.Introspectable.Introspect"))
+            # FAIL: root user access to netvm service
+            print(guivm.fail("dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.DBus.Introspectable.Introspect"))
 
-              # FAIL: evil1 user access to netvm service
-              print(guivm.fail("sudo -u evil1 dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.EnumerateDevices"))
+            # FAIL: evil1 user access to netvm service
+            print(guivm.fail("sudo -u evil1 dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.EnumerateDevices"))
 
-              # FAIL: evil2 user access to netvm service
-              print(guivm.fail("sudo -u evil2 dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.Avahi /org/freedesktop/Avahi org.freedesktop.DBus.Introspectable.Introspect"))
+            # FAIL: evil2 user access to netvm service
+            print(guivm.fail("sudo -u evil2 dbus-send --bus=unix:path=/tmp/.dbusproxy_net.sock --print-reply --dest=org.freedesktop.Avahi /org/freedesktop/Avahi org.freedesktop.DBus.Introspectable.Introspect"))
 
           with subtest("remote_user_to_sesssionbus_access"):
+            appvm.wait_for_unit("multi-user.target")
 
-            # SUCCESS: ghaf user access to audiovm session bus
+            # SUCCESS: ghaf user access to audiovm/appvm session bus
             print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_app.sock --print-reply --dest=org.mpris.MediaPlayer2.playerctld /org/mpris/MediaPlayer2 org.freedesktop.DBus.Introspectable.Introspect"))
+            print(guivm.succeed("sudo -u ghaf dbus-send --bus=unix:path=/tmp/.dbusproxy_app2.sock --print-reply --dest=org.mpris.MediaPlayer2.playerctld /org/mpris/MediaPlayer2 org.freedesktop.DBus.Introspectable.Introspect"))
 
-            # FAIL: root user access to audiovm session bus
+            # FAIL: root user access to audiovm/appvm session bus
             print(guivm.fail("dbus-send --bus=unix:path=/tmp/.dbusproxy_app.sock --print-reply --dest=org.mpris.MediaPlayer2.playerctld /org/freedesktop/MediaPlayer2 org.freedesktop.DBus.Introspectable.Introspect"))
+            print(guivm.fail("dbus-send --bus=unix:path=/tmp/.dbusproxy_app2.sock --print-reply --dest=org.mpris.MediaPlayer2.playerctld /org/freedesktop/MediaPlayer2 org.freedesktop.DBus.Introspectable.Introspect"))
 
         '';
       };
