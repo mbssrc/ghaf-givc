@@ -230,6 +230,7 @@ impl AdminServiceImpl {
             }
             (VmType::AppVM, ServiceType::Mgr) | (VmType::SysVM, ServiceType::Mgr) => {
                 let name = parse_service_name(&entry.name)?;
+                self.registry.deregister(&entry.name)?;
                 self.start_vm(name)
                     .await
                     .with_context(|| format!("handing error, by restart VM {}", entry.name))?;
