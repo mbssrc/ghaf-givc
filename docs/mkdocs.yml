@@ -1,0 +1,64 @@
+site_name: Ghaf/GRPC Inter-VM Communication Framework
+repo_name: tiiuae/ghaf-givc
+repo_url: https://github.com/tiiuae/ghaf-givc
+
+nav:
+- Home: index.md
+- Architecture: ./architecture.md
+- Get Started: ./examples.md
+- Security: ./security.md
+- API Documentation:
+    - Content: ./api.md
+    - Nixos Modules:
+      - Admin Module: ./api/nixos/admin_options.md
+      - Host Module: ./api/nixos/host_options.md
+      - AppVM Module: ./api/nixos/appvm_options.md
+      - SysVM Module: ./api/nixos/sysvm_options.md
+      - Dbus Module: ./api/nixos/dbus_options.md
+      - TLS Module: ./api/nixos/tls_options.md
+    - GPRC API:
+      - Protobuf API: ./api/grpc/api.md
+      - Go-grpc API:
+        - Systemd: ./api/go/grpc_systemd.md
+        - Admin: ./api/go/grpc_admin.md
+        - Locale: ./api/go/grpc_locale.md
+        - Socket: ./api/go/grpc_socket.md
+        - Stats: ./api/go/grpc_stats.md
+    - Go Modules:
+      - Agent: ./api/go/givc_agent.md
+      - GRPC: ./api/go/pkgs_grpc.md
+      - ServiceManager: ./api/go/pkgs_servicemanager.md
+      - ServiceClient: ./api/go/pkgs_serviceclient.md
+      - Applications: ./api/go/pkgs_applications.md
+      - LocaleListener: ./api/go/pkgs_localelistener.md
+      - StatsManager: ./api/go/pkgs_statsmanager.md
+      - Types: ./api/go/pkgs_types.md
+      - Utility: ./api/go/pkgs_utility.md
+- About: ./about.md
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to Light Mode
+      primary: teal
+      accent: teal
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to Dark Mode
+      primary: teal
+      accent: teal
+  features:
+    - navigation.path
+    - navigation.instant
+    - navigation.footer
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true

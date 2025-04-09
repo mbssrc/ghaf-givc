@@ -22,21 +22,31 @@
             $(type -p update-pre-commit-hooks &>/dev/null && update-pre-commit-hooks)
           '';
         };
-        packages = with pkgs; [
+        packages = [
           config.treefmt.build.wrapper
-          reuse
-          gopls
-          gosec
-          gotests
-          go-tools
-          golangci-lint
-          rustfmt
-          clippy
+          pkgs.reuse
+          pkgs.gopls
+          pkgs.gosec
+          pkgs.gotests
+          pkgs.go-tools
+          pkgs.golangci-lint
+          pkgs.rustfmt
+          pkgs.clippy
           pkgs.stdenv.cc # Need for build rust components
-          protobuf
-          protoc-gen-go
-          protoc-gen-go-grpc
-          grpcurl
+          pkgs.protobuf
+          pkgs.protoc-gen-go
+          pkgs.protoc-gen-go-grpc
+          pkgs.grpcurl
+          # Documentation
+          (pkgs.python312.withPackages (
+            ps: with ps; [
+              pkgs.python312Packages.mkdocs
+              pkgs.python312Packages.mkdocs-material
+              pkgs.python312Packages.pygments
+              pkgs.python312Packages.pymdown-extensions
+            ]
+          ))
+          pkgs.protoc-gen-doc
         ];
         packagesFrom = builtins.attrValues self'.packages;
         commands = [
@@ -70,6 +80,11 @@
             help = "golang linter";
             package = "golangci-lint";
             category = "linters";
+          }
+          {
+            help = "Run local docs server";
+            name = "docs-server";
+            command = "cd docs && mkdocs serve";
           }
         ];
       };

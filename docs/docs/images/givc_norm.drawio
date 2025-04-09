@@ -1,0 +1,94 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0" version="27.0.5">
+  <diagram name="Page-1" id="JcaBjtL1IaDTw1pcc5w2">
+    <mxGraphModel dx="1226" dy="1192" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="IMnXxgo887iIAKVLFUUU-52" value="" style="group;fillColor=none;fillStyle=solid;dashed=1;dashPattern=8 8;strokeWidth=2;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="520" y="520" width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-19" value="Application VM" style="rounded=0;html=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=top;whiteSpace=wrap;fontStyle=1;fillColor=none;dashed=1;strokeWidth=2;strokeColor=#666666;" parent="IMnXxgo887iIAKVLFUUU-52" vertex="1">
+          <mxGeometry width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-49" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=light-dark(#000000,#FFFFFF);" parent="IMnXxgo887iIAKVLFUUU-52" source="IMnXxgo887iIAKVLFUUU-25" target="IMnXxgo887iIAKVLFUUU-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-25" value="Agent" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFE6CC,#006633);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-52" vertex="1">
+          <mxGeometry x="30" y="40" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-31" value="Session Bus" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-52" vertex="1">
+          <mxGeometry x="30" y="100" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-53" value="" style="group;fillColor=none;fillStyle=solid;dashed=1;dashPattern=8 8;strokeWidth=2;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="320" y="520" width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-20" value="Admin VM" style="rounded=0;html=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=top;whiteSpace=wrap;fontStyle=1;fillColor=none;dashed=1;strokeWidth=2;strokeColor=#666666;" parent="IMnXxgo887iIAKVLFUUU-53" vertex="1">
+          <mxGeometry width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-29" value="Admin &lt;br&gt;Service" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFE6CC,#006633);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-53" vertex="1">
+          <mxGeometry x="27" y="40" width="110" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-35" value="Registry" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=6;strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-53" vertex="1">
+          <mxGeometry x="100" y="100" width="50" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-54" value="" style="group;fillColor=none;fillStyle=solid;dashed=1;dashPattern=8 8;strokeWidth=2;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="120" y="520" width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-17" value="System VM" style="rounded=0;html=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=top;whiteSpace=wrap;fontStyle=1;fillColor=none;dashed=1;strokeWidth=2;strokeColor=#666666;" parent="IMnXxgo887iIAKVLFUUU-54" vertex="1">
+          <mxGeometry width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-47" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="IMnXxgo887iIAKVLFUUU-54" source="IMnXxgo887iIAKVLFUUU-26" target="IMnXxgo887iIAKVLFUUU-30" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-26" value="Agent" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFE6CC,#006633);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-54" vertex="1">
+          <mxGeometry x="30" y="40" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-30" value="System Bus" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-54" vertex="1">
+          <mxGeometry x="30" y="100" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-55" value="" style="group;fillColor=none;fillStyle=solid;dashed=1;dashPattern=8 8;strokeWidth=2;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="120" y="710" width="560" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-21" value="Host" style="rounded=0;html=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=top;whiteSpace=wrap;fontStyle=1;fillColor=none;dashed=1;strokeWidth=2;strokeColor=#666666;" parent="IMnXxgo887iIAKVLFUUU-55" vertex="1">
+          <mxGeometry width="560" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-48" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="IMnXxgo887iIAKVLFUUU-55" source="IMnXxgo887iIAKVLFUUU-23" target="IMnXxgo887iIAKVLFUUU-40" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-23" value="Agent" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFE6CC,#006633);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-55" vertex="1">
+          <mxGeometry x="222.16" y="36.00040404040405" width="121.69" height="36.36363636363637" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-40" value="System Bus" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);" parent="IMnXxgo887iIAKVLFUUU-55" vertex="1">
+          <mxGeometry x="410" y="36.00040404040405" width="120" height="36.36363636363637" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-41" value="Hardware" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-55" vertex="1">
+          <mxGeometry x="30" y="36.00040404040405" width="100" height="36.36363636363637" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-56" value="" style="group;fillColor=none;fillStyle=auto;strokeWidth=2;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="120" y="320" width="560" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-18" value="Gui VM" style="rounded=0;html=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=top;whiteSpace=wrap;fontStyle=1;fillColor=none;dashed=1;strokeWidth=2;strokeColor=#666666;" parent="IMnXxgo887iIAKVLFUUU-56" vertex="1">
+          <mxGeometry width="560" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-27" value="CLI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFE6CC,#006633);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-56" vertex="1">
+          <mxGeometry x="223.28" y="110" width="116.72" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-39" value="Application Starter" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-56" vertex="1">
+          <mxGeometry x="126.72206896551725" y="30" width="96.55172413793103" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-43" value="Resource&lt;br&gt;Monitor" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);" parent="IMnXxgo887iIAKVLFUUU-56" vertex="1">
+          <mxGeometry x="340" y="30" width="88.45" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-44" value="System Commands" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);" parent="IMnXxgo887iIAKVLFUUU-56" vertex="1">
+          <mxGeometry x="420" y="110" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-45" value="DBUS&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;Applications&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#D6D6D6,#3B3B3B);strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;" parent="IMnXxgo887iIAKVLFUUU-56" vertex="1">
+          <mxGeometry x="50" y="110" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IMnXxgo887iIAKVLFUUU-42" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=flexArrow;textOpacity=0;fillColor=default;" parent="1" source="IMnXxgo887iIAKVLFUUU-30" target="IMnXxgo887iIAKVLFUUU-41" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,7 +1,7 @@
 # Copyright 2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
-  description = "Inter-vm communication framework with gRPC.";
+  description = "GRPC Inter-Vm Communication framework.";
 
   # Inputs
   inputs = {
@@ -50,7 +50,11 @@
       ];
 
       perSystem =
-        { pkgs, lib, ... }:
+        {
+          pkgs,
+          lib,
+          ...
+        }:
         {
           # Packages
           packages =
@@ -73,6 +77,10 @@
               givc-agent = pkgs.callPackage ./nixos/packages/givc-agent.nix { inherit src; };
               givc-cli = givc-admin.cli;
               inherit (givc-admin) update_server;
+              docs = pkgs.callPackage ./nixos/packages/givc-docs.nix {
+                inherit pkgs lib self;
+                src = ./.;
+              };
             };
         };
       flake = {
@@ -91,6 +99,7 @@
         overlays.default = _final: prev: {
           givc-cli = self.packages.${prev.stdenv.hostPlatform.system}.givc-admin.cli;
         };
+
       };
     };
 }
