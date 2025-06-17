@@ -82,7 +82,9 @@ let
         ];
         users.users.root.openssh.authorizedKeys.keys = [ snakeOilPublicKey ];
         services.openssh.enable = true;
-        systemd.services.givc-admin.environment.GIVC_MONITORING = "false";
+        systemd.services.givc-admin.environment = {
+          GIVC_MONITORING = "false";
+        };
         environment.systemPackages = [ find-software-update ];
       };
   };
