@@ -5,7 +5,7 @@ use crate::pb::{
     self, ApplicationRequest, ApplicationResponse, Empty, ListGenerationsResponse, LocaleRequest,
     QueryListResponse, RegistryRequest, RegistryResponse, SetGenerationRequest,
     SetGenerationResponse, StartResponse, StartVmRequest, TimezoneRequest, UnitStatusRequest,
-    WatchItem,
+    UserNotificationRequest, WatchItem,
 };
 use anyhow::{Context, anyhow, bail};
 use async_stream::try_stream;
@@ -403,6 +403,28 @@ impl AdminServiceImpl {
         }
         Ok(remote_name)
     }
+
+    pub(crate) async fn notify_user(
+        &self,
+        vm_name: String,
+        event: String,
+        title: String,
+        criticality: String,
+        message: String,
+    ) -> anyhow::Result<pb::notify::Status> {
+        let endpoint = self.agent_endpoint(&vm_name)?;
+        let conn = endpoint.connect().await?;
+        let mut client =
+            pb::notify::user_notification_service_client::UserNotificationServiceClient::new(conn);
+        let request = pb::notify::UserNotification {
+            event,
+            title,
+            criticality,
+            message,
+        };
+        let response = client.notify_user(request).await?;
+        Ok(response.into_inner())
+    }
 }
 
 #[allow(clippy::unnecessary_wraps)]
@@ -783,6 +805,29 @@ impl pb::admin_service_server::AdminService for AdminService {
             };
             Ok(Box::pin(stream) as Self::WatchStream)
         })
+        .await
+    }
+
+    // User notification
+    async fn notify_user(
+        &self,
+        request: tonic::Request<pb::admin::UserNotificationRequest>,
+    ) -> Result<tonic::Response<pb::notify::Status>, tonic::Status> {
+        escalate(
+            request,
+            async move |UserNotificationRequest {
+                            vm_name,
+                            event,
+                            title,
+                            criticality,
+                            message,
+                        }| {
+                let vm_name = VmName::Vm(&vm_name).agent_service();
+                self.inner
+                    .notify_user(vm_name, event, title, criticality, message)
+                    .await
+            },
+        )
         .await
     }
 
